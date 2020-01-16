@@ -1,0 +1,78 @@
+# .NET Core範例
+
+## 依賴主要套件
+
+```xml
+<PackageReference Include="App.Metrics.AspNetCore.Health.Endpoints" Version="3.1.0" />
+<PackageReference Include="App.Metrics.Health" Version="3.1.0" />
+<PackageReference Include="App.Metrics.Health.Checks.Http" Version="3.1.0" />
+<PackageReference Include="App.Metrics.Health.Checks.Network" Version="3.1.0" />
+<PackageReference Include="App.Metrics.Health.Checks.Sql" Version="3.1.0" />
+```
+
+## Startup
+
+```csharp
+public class Startup
+{
+    public Startup(IConfiguration configuration)
+    {
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // 加入 ASP.NET Core MVC 服務
+        services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+
+        // 健康狀態
+        var metrics = AppMetricsHealth
+            .CreateDefaultBuilder()
+            .HealthChecks.RegisterFromAssembly(services)
+            .HealthChecks.AddPingCheck("weburl url ping", "weburl.evertrust.com.tw", TimeSpan.FromSeconds(10), true)
+            .HealthChecks.AddPingCheck("mail url ping", mailDomain, TimeSpan.FromSeconds(10), true)
+            .HealthChecks.AddPingCheck("empinfo url ping", empinfoDomain, TimeSpan.FromSeconds(10))
+            .HealthChecks.AddPingCheck("session url ping", sessionDomain, TimeSpan.FromSeconds(10))
+            .HealthChecks.AddPingCheck("accesslog url ping", accessLogDomain, TimeSpan.FromSeconds(10), true)
+            .HealthChecks.AddSqlCachedCheck(
+                "drama connection",
+                () => new SqlConnection(dramaConn.Substring(0, 10)),
+                TimeSpan.FromSeconds(10),
+                TimeSpan.FromMinutes(1))
+            .HealthChecks.AddSqlCachedCheck(
+                "ef2kweb connection",
+                () => new SqlConnection(ef2kConn),
+                TimeSpan.FromSeconds(10),
+                TimeSpan.FromMinutes(1),
+                true)
+            .HealthChecks.AddSqlCachedCheck(
+                "pii connection",
+                () => new SqlConnection(piiConn),
+                TimeSpan.FromSeconds(10),
+                TimeSpan.FromMinutes(1),
+                true)
+            .BuildAndAddTo(services);
+
+        services.AddHealth(metrics);
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger<Startup> logger)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        app
+            .UseHealthAllEndpoints()
+            .UseMvc();
+    }
+}
+```
+
+![Sample](images/2019-04-26_160512.PNG)
