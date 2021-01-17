@@ -33,7 +33,7 @@ public class Startup
         var metrics = AppMetricsHealth
             .CreateDefaultBuilder()
             .HealthChecks.RegisterFromAssembly(services)
-            .HealthChecks.AddPingCheck("weburl url ping", "weburl.evertrust.com.tw", TimeSpan.FromSeconds(10), true)
+            .HealthChecks.AddPingCheck("weburl url ping", "", TimeSpan.FromSeconds(10), true)
             .HealthChecks.AddPingCheck("mail url ping", mailDomain, TimeSpan.FromSeconds(10), true)
             .HealthChecks.AddPingCheck("empinfo url ping", empinfoDomain, TimeSpan.FromSeconds(10))
             .HealthChecks.AddPingCheck("session url ping", sessionDomain, TimeSpan.FromSeconds(10))
