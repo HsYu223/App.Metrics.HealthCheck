@@ -41,7 +41,7 @@ public class Startup
                 .HealthChecks.AddProcessVirtualMemorySizeCheck("Virtual Memory Size", 1024 * 1024 * 1024)
                 .HealthChecks.AddProcessPhysicalMemoryCheck("Working Set", 1024 * 1024 * 1024)
                 .HealthChecks.AddPingCheck("google ping", "google.com", TimeSpan.FromSeconds(10))
-                .HealthChecks.AddHttpGetCheck("weburl", new Uri("https://weburl.evertrust.com.tw/connection/EEPS?mode=production"), TimeSpan.FromSeconds(10))
+                .HealthChecks.AddHttpGetCheck("weburl", new Uri(""), TimeSpan.FromSeconds(10))
                 .BuildAndAddTo(services);
 
             services.AddHealth(healthBuilder);
@@ -90,7 +90,7 @@ public class Startup
         try
         {
             var token = ConfigurationManager.AppSettings["ChatToken"].ToString();
-            var url = "https://chat.evertrust.com.tw/webapi/entry.cgi?api=SYNO.Chat.External&method=incoming&version=2&token=%22" + token + "%22&payload=";
+            var url = "";
             var text = HttpUtility.UrlEncode(JsonConvert.SerializeObject(new JObject(new JProperty("text", Environment.MachineName + " Health Ckech：" + status))));
             var result = _client.GetAsync(url + text).GetAwaiter().GetResult();
         }
